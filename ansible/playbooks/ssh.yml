@@ -1,0 +1,74 @@
+---
+- hosts: ubuntu
+  become: true
+  vars:
+    ssh_port: 2200
+    user: rjcruz
+  tasks:
+  - name: Install dependencies
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - firewalld
+  - name: Open SSH port in firewall
+    firewalld:
+      port: "{{ ssh_port }}/tcp"
+      permanent: true
+      state: enabled
+  - name: Update SSH port
+    ini_file:
+      path: /etc/ssh/sshd_config
+      section: 'SSH Daemon'
+      option: Port
+      value: "{{ ssh_port }}"
+  - name: Enable pubkey authentication
+    ini_file:
+      path: /etc/ssh/sshd_config
+      section: 'SSH Daemon'
+      option: PubkeyAuthentication
+      value: yes
+  - name: Disable password authentication
+    ini_file:
+      path: /etc/ssh/sshd_config
+      section: 'SSH Daemon'
+      option: PasswordAuthentication
+      value: no
+  - name: Disable root login
+    ini_file:
+      path: /etc/ssh/sshd_config
+      section: 'SSH Daemon'
+      option: PermitRootLogin
+      value: no
+  - name: Generate SSH key pair
+    ssh_keypair:
+      path: ~/.ssh/id_rsa
+  - name: Add public key to authorized_keys
+    authorized_key:
+      user: "{{ ansible_user }}"
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  - name: Copy public keys to all other hosts
+    authorized_key:
+      user: "{{ ansible_user }}"
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    with_items: "{{ groups['all'] }}"
+    when: inventory_hostname != item
+  - name: Add user
+    user:
+      name: "{{ user }}"
+      state: present
+      groups: wheel
+      createhome: yes
+  - name: Add user to sudoers
+    lineinfile:
+      path: /etc/sudoers
+      line: "{{ user }} ALL=(ALL) NOPASSWD: ALL"
+      state: present
+  - name: Deploy ssh key
+    authorized_key:
+      user: "{{ user }}"
+      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  - name: Restart SSH service
+    service:
+      name: ssh
+      state: restarted
