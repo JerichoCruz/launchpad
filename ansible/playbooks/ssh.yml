@@ -5,17 +5,11 @@
     ssh_port: 2200
     user: rjcruz
   tasks:
-  - name: Install dependencies
-    package:
-      name: "{{ item }}"
-      state: present
-    with_items:
-      - firewalld
-  - name: Open SSH port in firewall
-    firewalld:
-      port: "{{ ssh_port }}/tcp"
-      permanent: true
-      state: enabled
+  - name: Allow incoming connections on ssh_port
+    ufw:
+      rule: allow
+      port: {{ ssh_port }}
+      proto: tcp
   - name: Update SSH port
     ini_file:
       path: /etc/ssh/sshd_config
