@@ -63,3 +63,4 @@ talosconfig*
 *.pub
 *.key
 ansible/playbooks/vars_cifs.yml
+ansible/inventory/hosts
