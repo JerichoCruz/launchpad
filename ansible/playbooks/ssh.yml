@@ -8,7 +8,7 @@
   - name: Allow incoming connections on ssh_port
     ufw:
       rule: allow
-      port: {{ ssh_port }}
+      port: "{{ ssh_port }}"
       proto: tcp
   - name: Update SSH port
     ini_file:
@@ -34,9 +34,13 @@
       section: 'SSH Daemon'
       option: PermitRootLogin
       value: no
-  - name: Generate SSH key pair
-    ssh_keypair:
+  - name: Check if SSH key pair exists
+    stat:
       path: ~/.ssh/id_rsa
+    register: ssh_key_pair
+  - name: Generate SSH key pair
+    command: ssh-keygen -f ~/.ssh/id_rsa -N ""
+    when: not ssh_key_pair.stat.exists
   - name: Add public key to authorized_keys
     authorized_key:
       user: "{{ ansible_user }}"
