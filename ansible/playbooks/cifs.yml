@@ -1,0 +1,54 @@
+---
+# This playbook installs cifs-utils, creates directories, creates a cifs-credentials file with the
+# provided CIFS domain, username, and password, and then mounts the CIFS shares at /mnt/data and
+# /mnt/downloads on boot.
+- hosts: ubuntu
+  become: yes
+  vars_files:
+    - vars_cifs.yml
+  tasks:
+  - name: Update package manager cache
+    apt:
+      update_cache: yes
+  - name: Install cifs-utils and samba
+    package:
+      name:
+        - cifs-utils
+        - samba
+      state: present
+  - name: Create directories
+    file:
+      path: /mnt/{{ item }}
+      state: directory
+      mode: 0750
+    with_items:
+      - data
+      - downloads
+  - name: Create cifs-credentials file
+    copy:
+      content: "username={{ cifs_username }}\npassword={{ cifs_password }}\ndomain={{ cifs_domain }}"
+      dest: /etc/samba/cifs-credentials
+      owner: root
+      group: root
+      mode: 0640
+  - name: Edit /etc/fstab to automount CIFS shares
+    lineinfile:
+      path: /etc/fstab
+      line: "//{{ server_ip }}/{{ item }} /mnt/{{ item }} cifs credentials=/etc/samba/cifs-credentials,uid=1000,gid=1000 0 0"
+      create: yes
+      owner: root
+      group: root
+      mode: 0640
+    with_items:
+      - data
+      - downloads
+  - name: Mount CIFS shares
+    mount:
+      path: /mnt/{{ item }}
+      src: //{{ server_ip }}/{{ item }}
+      fstype: cifs
+      opts: credentials=/etc/samba/cifs-credentials,uid=1000,gid=1000
+      state: mounted
+    with_items:
+      - data
+      - downloads
