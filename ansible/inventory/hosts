@@ -1,5 +1,13 @@
-[hosts]
-server-01
-server-02
-192.168.0.101
-192.168.0.102
+# these are examples; replace variables below
+
+[nas]
+ssh_name_here ansible_host=ip_here ansible_port=port_here
+
+[ubuntu]
+ssh_name_here ansible_host=ip_here ansible_port=port_here
+
+[rpis]
+ssh_name_here ansible_host=ip_here ansible_port=port_here
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
