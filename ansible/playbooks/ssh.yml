@@ -3,7 +3,7 @@
   become: true
   vars:
     ssh_port: 2200
-    user: rjcruz
+    user: MYUSERNAME
   tasks:
   - name: Allow incoming connections on ssh_port
     ufw:
@@ -68,3 +68,4 @@
     service:
       name: ssh
       state: restarted
+      
