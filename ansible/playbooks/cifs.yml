@@ -3,6 +3,9 @@
 # provided CIFS domain, username, and password, and then mounts the CIFS shares at /mnt/data and
 # /mnt/downloads on boot.
 - hosts: ubuntu
+# Uncomment below to use on localhost (bash command: ansible-playbook -i "localhost," cifs.yml)
+# hosts: localhost
+# connection: local
   become: yes
   vars_files:
     - vars_cifs.yml

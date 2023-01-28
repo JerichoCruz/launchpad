@@ -17,13 +17,13 @@
       line: "PubkeyAuthentication yes"
       state: present
       backup: yes
-  - name: Disable Password Authentication
-    lineinfile:
-      dest: /etc/ssh/sshd_config
-      regexp: '^PasswordAuthentication'
-      line: "PasswordAuthentication no"
-      state: present
-      backup: yes
+  # - name: Disable Password Authentication
+  #   lineinfile:
+  #     dest: /etc/ssh/sshd_config
+  #     regexp: '^PasswordAuthentication'
+  #     line: "PasswordAuthentication no"
+  #     state: present
+  #     backup: yes
   - name: Disable Root Login
     lineinfile:
       dest: /etc/ssh/sshd_config
@@ -38,32 +38,32 @@
       line: "Port {{ ssh_port }}"
       state: present
       backup: yes
-  - name: Check if SSH key pair exists
-    stat:
-      path: ~/.ssh/id_rsa
-    register: ssh_key_pair
-  - name: Generate SSH key pair
-    command: ssh-keygen -f ~/.ssh/id_rsa -N ""
-    when: not ssh_key_pair.stat.exists
-  - name: Add public key to authorized_keys
-    authorized_key:
-      user: "{{ ansible_user }}"
-      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-  - name: Copy public keys to all other hosts
-    authorized_key:
-      user: "{{ ansible_user }}"
-      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
-    with_items: "{{ groups['all'] }}"
-    when: inventory_hostname != item
+  # - name: Check if SSH key pair exists
+  #   stat:
+  #     path: ~/.ssh/id_rsa
+  #   register: ssh_key_pair
+  # - name: Generate SSH key pair
+  #   command: ssh-keygen -f ~/.ssh/id_rsa -N ""
+  #   when: not ssh_key_pair.stat.exists
+  # - name: Add public key to authorized_keys
+  #   authorized_key:
+  #     user: "{{ ansible_user }}"
+  #     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  # - name: Copy public keys to all other hosts
+  #   authorized_key:
+  #     user: "{{ ansible_user }}"
+  #     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  #   with_items: "{{ groups['all'] }}"
+  #   when: inventory_hostname != item
   - name: Add user to sudoers
     lineinfile:
       path: /etc/sudoers
       line: "{{ user }} ALL=(ALL) NOPASSWD: ALL"
       state: present
-  - name: Deploy ssh key
-    authorized_key:
-      user: "{{ user }}"
-      key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  # - name: Deploy ssh key
+  #   authorized_key:
+  #     user: "{{ user }}"
+  #     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
   - name: Restart SSH service
     service:
       name: ssh

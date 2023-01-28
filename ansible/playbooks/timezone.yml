@@ -1,5 +1,8 @@
 - name: Set timezone and configure timesyncd
   hosts: "*"
+# Uncomment below to use on localhost (bash command: ansible-playbook -i "localhost," timezone.yml)
+# hosts: localhost
+# connection: local
   become: yes
   tasks:
   - name: set timezone
